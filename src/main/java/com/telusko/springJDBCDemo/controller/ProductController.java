@@ -3,6 +3,7 @@ package com.telusko.springJDBCDemo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,8 +34,10 @@ public class ProductController {
 	    return ResponseEntity.ok(products);
 	}
 	
-	@PostMapping("/products")
-	public ResponseEntity<?> addProduct(@RequestPart Product p,@RequestPart MultipartFile imageFile) {
+	@PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> addProduct(
+			@RequestPart("p") Product p,
+			@RequestPart("imageFile") MultipartFile imageFile) {
 	    try {
 	        Product createdProduct = service.addProduct(p, imageFile);
 	        return ResponseEntity.ok(createdProduct);
