@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.telusko.springJDBCDemo.dto.AddToCartRequest;
 import com.telusko.springJDBCDemo.dto.CartItemResponse;
 import com.telusko.springJDBCDemo.dto.CartResponse;
+import com.telusko.springJDBCDemo.dto.UpdateCartItemRequest;
 import com.telusko.springJDBCDemo.model.Cart;
 import com.telusko.springJDBCDemo.model.CartItem;
 import com.telusko.springJDBCDemo.model.Product;
@@ -68,6 +69,44 @@ public class CartService {
         Cart cart = cartRepo.findById(cartId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found"));
         return toCartResponse(cart);
+    }
+
+    @Transactional
+    public CartResponse updateItemQuantity(Long cartId, Integer productId, UpdateCartItemRequest request) {
+        if (request == null || request.getQuantity() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "quantity is required");
+        }
+
+        int quantity = request.getQuantity();
+        if (quantity <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "quantity must be greater than 0");
+        }
+
+        Cart cart = cartRepo.findById(cartId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found"));
+
+        CartItem cartItem = cart.getItems().stream()
+                .filter(item -> item.getProduct().getId() == productId)
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart item not found"));
+
+        cartItem.setQuantity(quantity);
+        Cart savedCart = cartRepo.save(cart);
+        return toCartResponse(savedCart);
+    }
+
+    @Transactional
+    public CartResponse removeItemFromCart(Long cartId, Integer productId) {
+        Cart cart = cartRepo.findById(cartId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found"));
+
+        boolean removed = cart.getItems().removeIf(item -> item.getProduct().getId() == productId);
+        if (!removed) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart item not found");
+        }
+
+        Cart savedCart = cartRepo.save(cart);
+        return toCartResponse(savedCart);
     }
 
     private Cart resolveCart(Long cartId) {
