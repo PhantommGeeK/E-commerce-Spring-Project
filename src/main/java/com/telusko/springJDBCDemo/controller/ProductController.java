@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +34,11 @@ public class ProductController {
 	    List<Product> products = service.findAll();
 	    return ResponseEntity.ok(products);
 	}
+
+	@GetMapping("/products/search")
+	public ResponseEntity<List<Product>> searchProductsByCategory(@RequestParam(required = false) String category) {
+	    return ResponseEntity.ok(service.searchByCategory(category));
+	}
 	
 	@PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> addProduct(
@@ -53,7 +59,7 @@ public class ProductController {
 	    return service.updateProduct(id, p);
 	}
 	
-	@GetMapping("/products/{id}")
+	@GetMapping("/products/{id:\\d+}")
 	public Product getProduct(@PathVariable int id) {
 	    // Implement logic to retrieve a product by its id
 	    // You can use the service layer to perform the retrieval operation

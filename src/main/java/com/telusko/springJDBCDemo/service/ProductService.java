@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.telusko.springJDBCDemo.model.Product;
@@ -14,8 +15,18 @@ public class ProductService {
 	@Autowired
 	private ProductRepo repo;
 
+	@Transactional(readOnly = true)
 	public List<Product> findAll() {
 		return repo.findAll();
+	}
+
+	@Transactional(readOnly = true)
+	public List<Product> searchByCategory(String category) {
+		if (category == null || category.trim().isEmpty()) {
+			return repo.findAll();
+		}
+
+		return repo.findByCategoryContainingIgnoreCase(category.trim());
 	}
 
 	public Product updateProduct(int id, Product p) {
@@ -35,6 +46,7 @@ public class ProductService {
 		return null; // or throw an exception if product not found
 	}
 
+	@Transactional(readOnly = true)
 	public Product getProductById(int id) {
 		// TODO Auto-generated method stub
 		return repo.findById(id).orElse(null);
